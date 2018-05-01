@@ -136,18 +136,32 @@ class SFragmentTest {
     }
 
     @Test
-    fun beginEndSearch_setIsSearching() {
+    fun beginEndSearch_setIsSearching_isSearchingAfterBegin() {
         val validUrl = "https://mastodon.foo.bar/@User"
         val invalidUrl = ""
 
         fragment.onBeginSearch(validUrl)
         Assert.assertTrue(fragment.isSearching)
+    }
 
-        fragment.onEndSearch(invalidUrl)
-        Assert.assertTrue(fragment.isSearching)
+    @Test
+    fun beginEndSearch_setIsSearching_isNotSearchingAfterEnd() {
+        val validUrl = "https://mastodon.foo.bar/@User"
+        val invalidUrl = ""
 
+        fragment.onBeginSearch(validUrl)
         fragment.onEndSearch(validUrl)
         Assert.assertFalse(fragment.isSearching)
+    }
+
+    @Test
+    fun beginEndSearch_setIsSearching_doesNotCancelSearchWhenResponseFromPreviousSearchIsReceived() {
+        val validUrl = "https://mastodon.foo.bar/@User"
+        val invalidUrl = ""
+
+        fragment.onBeginSearch(validUrl)
+        fragment.onEndSearch(invalidUrl)
+        Assert.assertTrue(fragment.isSearching)
     }
 
     @Test
@@ -171,23 +185,23 @@ class SFragmentTest {
     }
 
     @Test
-    fun search_inIdealConditions_returnsRequestedResults() {
+    fun search_inIdealConditions_returnsRequestedResults_forAccount() {
         fragment.onViewURL(accountQuery)
-        Assert.assertTrue(fragment.isSearching)
         accountCallback.invokeCallback()
-        Assert.assertFalse(fragment.isSearching)
         Assert.assertEquals(account.id, fragment.accountId)
+    }
 
+    @Test
+    fun search_inIdealConditions_returnsRequestedResults_forStatus() {
         fragment.onViewURL(statusQuery)
-        Assert.assertTrue(fragment.isSearching)
         statusCallback.invokeCallback()
-        Assert.assertFalse(fragment.isSearching)
         Assert.assertEquals(status, fragment.status)
+    }
 
+    @Test
+    fun search_inIdealConditions_returnsRequestedResults_forNonMastodonURL() {
         fragment.onViewURL(nonMastodonQuery)
-        Assert.assertTrue(fragment.isSearching)
-        emptyCallback.invokeCallback()
-        Assert.assertFalse(fragment.isSearching)
+        statusCallback.invokeCallback()
         Assert.assertEquals(nonMastodonQuery, fragment.url)
     }
 
@@ -264,20 +278,20 @@ class SFragmentTest {
             this.callback = callback
         }
 
-        override fun isExecuted(): Boolean { TODO("not implemented") }
-        override fun clone(): Call<SearchResults> { TODO("not implemented") }
-        override fun isCanceled(): Boolean { TODO("not implemented") }
-        override fun cancel() { TODO("not implemented") }
-        override fun execute(): Response<SearchResults> { TODO("not implemented") }
-        override fun request(): Request { TODO("not implemented") }
+        override fun isExecuted(): Boolean { throw NotImplementedError() }
+        override fun clone(): Call<SearchResults> { throw NotImplementedError() }
+        override fun isCanceled(): Boolean { throw NotImplementedError() }
+        override fun cancel() { throw NotImplementedError() }
+        override fun execute(): Response<SearchResults> { throw NotImplementedError() }
+        override fun request(): Request { throw NotImplementedError() }
     }
 
-    class FakeSFragment : SFragment {
+    class FakeSFragment : SFragment() {
         var status: Status? = null
         var accountId: String? = null
         var url: String? = null
 
-        constructor(): super() {
+        init {
             callList = mutableListOf()
         }
 
@@ -293,8 +307,8 @@ class SFragmentTest {
             this.status = status
         }
 
-        override fun removeItem(position: Int) { TODO("not implemented") }
-        override fun removeAllByAccountId(accountId: String?) { TODO("not implemented") }
-        override fun timelineCases(): TimelineCases { TODO("not implemented") }
+        override fun removeItem(position: Int) { throw NotImplementedError() }
+        override fun removeAllByAccountId(accountId: String?) { throw NotImplementedError() }
+        override fun timelineCases(): TimelineCases { throw NotImplementedError() }
     }
 }
