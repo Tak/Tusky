@@ -78,6 +78,7 @@ class BottomSheetActivityTest {
             Collections.emptyList(),
             0,
             0,
+            0,
             false,
             false,
             false,

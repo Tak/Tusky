@@ -68,6 +68,7 @@ data class ConversationStatusEntity(
         val createdAt: Date,
         val emojis: List<Emoji>,
         val favouritesCount: Int,
+        val repliesCount: Int,
         val favourited: Boolean,
         val bookmarked: Boolean,
         val sensitive: Boolean,
@@ -97,6 +98,7 @@ data class ConversationStatusEntity(
         if (createdAt != other.createdAt) return false
         if (emojis != other.emojis) return false
         if (favouritesCount != other.favouritesCount) return false
+        if (repliesCount != other.repliesCount) return false
         if (favourited != other.favourited) return false
         if (sensitive != other.sensitive) return false
         if (spoilerText != other.spoilerText) return false
@@ -121,6 +123,7 @@ data class ConversationStatusEntity(
         result = 31 * result + createdAt.hashCode()
         result = 31 * result + emojis.hashCode()
         result = 31 * result + favouritesCount
+        result = 31 * result + repliesCount
         result = 31 * result + favourited.hashCode()
         result = 31 * result + sensitive.hashCode()
         result = 31 * result + spoilerText.hashCode()
@@ -147,6 +150,7 @@ data class ConversationStatusEntity(
                 emojis = emojis,
                 reblogsCount = 0,
                 favouritesCount = favouritesCount,
+                repliesCount = repliesCount,
                 reblogged = false,
                 favourited = favourited,
                 bookmarked = bookmarked,
@@ -174,7 +178,7 @@ fun Account.toEntity() =
 fun Status.toEntity() =
         ConversationStatusEntity(
                 id, url, inReplyToId, inReplyToAccountId, account.toEntity(), content,
-                createdAt, emojis, favouritesCount, favourited, bookmarked, sensitive,
+                createdAt, emojis, favouritesCount, repliesCount, favourited, bookmarked, sensitive,
                 spoilerText, attachments, mentions,
                 false,
                 false,

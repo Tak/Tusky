@@ -315,6 +315,7 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE `TimelineStatusEntity` ADD COLUMN `bookmarked` INTEGER NOT NULL DEFAULT 0");
             database.execSQL("ALTER TABLE `ConversationEntity` ADD COLUMN `s_bookmarked` INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE `TimelineStatusEntity` ADD COLUMN `repliesCount` INTEGER NOT NULL DEFAULT 0");
         }
     };
 
