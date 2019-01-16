@@ -136,6 +136,7 @@ public class NotificationsFragment extends SFragment implements
     private boolean bottomLoading;
     private String bottomId;
     private boolean alwaysShowSensitiveMedia;
+    private boolean alwaysExpandContentWarnings;
 
     @Override
     protected TimelineCases timelineCases() {
@@ -151,7 +152,8 @@ public class NotificationsFragment extends SFragment implements
                 Notification notification = input.asRight();
                 return ViewDataUtils.notificationToViewData(
                         notification,
-                        alwaysShowSensitiveMedia
+                        alwaysShowSensitiveMedia,
+                        alwaysExpandContentWarnings
                 );
             } else {
                 return new NotificationViewData.Placeholder(false);
@@ -195,8 +197,10 @@ public class NotificationsFragment extends SFragment implements
 
         adapter = new NotificationsAdapter(this, this);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
-        boolean mediaPreviewEnabled = accountManager.getActiveAccount().getMediaPreviewEnabled();
+        AccountEntity account = accountManager.getActiveAccount();
+        alwaysShowSensitiveMedia = account.getAlwaysShowSensitiveMedia();
+        alwaysExpandContentWarnings = account.getAlwaysExpandContentWarnings();
+        boolean mediaPreviewEnabled = account.getMediaPreviewEnabled();
         adapter.setMediaPreviewEnabled(mediaPreviewEnabled);
         boolean useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false);
         adapter.setUseAbsoluteTime(useAbsoluteTime);

@@ -72,6 +72,7 @@ data class Account(
 data class AccountSource(
         val privacy: Status.Visibility,
         val sensitive: Boolean,
+        val expand_spoilers: Boolean,
         val note: String,
         val fields: List<StringField>?
 ): Parcelable

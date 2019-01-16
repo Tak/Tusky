@@ -175,7 +175,8 @@ public interface MastodonApi {
     @FormUrlEncoded
     @PATCH("api/v1/accounts/update_credentials")
     Call<Account> accountUpdateSource(@Nullable @Field("source[privacy]") String privacy,
-                                      @Nullable @Field("source[sensitive]") Boolean sensitive);
+                                      @Nullable @Field("source[sensitive]") Boolean sensitive,
+                                      @Nullable @Field("source[expand_spoilers]") Boolean expandSpoilers);
 
     @Multipart
     @PATCH("api/v1/accounts/update_credentials")

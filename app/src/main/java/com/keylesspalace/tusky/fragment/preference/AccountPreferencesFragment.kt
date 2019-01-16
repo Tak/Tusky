@@ -66,6 +66,7 @@ class AccountPreferencesFragment : PreferenceFragmentCompat(),
     private lateinit var defaultPostPrivacyPreference: ListPreference
     private lateinit var defaultMediaSensitivityPreference: SwitchPreference
     private lateinit var alwaysShowSensitiveMediaPreference: SwitchPreference
+    private lateinit var alwaysExpandContentWarningsPreference: SwitchPreference
     private lateinit var mediaPreviewEnabledPreference: SwitchPreference
 
     private val iconSize by lazy {resources.getDimensionPixelSize(R.dimen.preference_icon_size)}
@@ -80,6 +81,7 @@ class AccountPreferencesFragment : PreferenceFragmentCompat(),
         defaultMediaSensitivityPreference = findPreference("defaultMediaSensitivity") as SwitchPreference
         mediaPreviewEnabledPreference = findPreference("mediaPreviewEnabled") as SwitchPreference
         alwaysShowSensitiveMediaPreference = findPreference("alwaysShowSensitiveMedia") as SwitchPreference
+        alwaysExpandContentWarningsPreference = findPreference("alwaysExpandContentWarnings") as SwitchPreference
 
         notificationPreference.icon = IconicsDrawable(context, GoogleMaterial.Icon.gmd_notifications).sizePx(iconSize).color(ThemeUtils.getColor(context, R.attr.toolbar_icon_tint))
         mutedUsersPreference.icon = getTintedIcon(R.drawable.ic_mute_24dp)
@@ -93,6 +95,7 @@ class AccountPreferencesFragment : PreferenceFragmentCompat(),
         defaultMediaSensitivityPreference.onPreferenceChangeListener = this
         mediaPreviewEnabledPreference.onPreferenceChangeListener = this
         alwaysShowSensitiveMediaPreference.onPreferenceChangeListener = this
+        alwaysExpandContentWarningsPreference.onPreferenceChangeListener = this
 
     }
 
@@ -109,6 +112,7 @@ class AccountPreferencesFragment : PreferenceFragmentCompat(),
 
             mediaPreviewEnabledPreference.isChecked = it.mediaPreviewEnabled
             alwaysShowSensitiveMediaPreference.isChecked = it.alwaysShowSensitiveMedia
+            alwaysExpandContentWarningsPreference.isChecked = it.alwaysExpandContentWarnings
 
         }
     }
@@ -134,6 +138,13 @@ class AccountPreferencesFragment : PreferenceFragmentCompat(),
                     it.alwaysShowSensitiveMedia = newValue as Boolean
                     accountManager.saveAccount(it)
                 }
+            }
+            alwaysExpandContentWarningsPreference -> {
+                accountManager.activeAccount?.let {
+                    it.alwaysExpandContentWarnings = newValue as Boolean
+                    accountManager.saveAccount(it)
+                }
+                syncWithServer(expandContentWarnings = newValue as Boolean)
             }
         }
 
@@ -181,8 +192,8 @@ class AccountPreferencesFragment : PreferenceFragmentCompat(),
 
     }
 
-    private fun syncWithServer(visibility: String? = null, sensitive: Boolean? = null) {
-        mastodonApi.accountUpdateSource(visibility, sensitive)
+    private fun syncWithServer(visibility: String? = null, sensitive: Boolean? = null, expandContentWarnings: Boolean? = null) {
+        mastodonApi.accountUpdateSource(visibility, sensitive, expandContentWarnings)
                 .enqueue(object: Callback<Account>{
                     override fun onResponse(call: Call<Account>, response: Response<Account>) {
                         val account = response.body()
@@ -191,26 +202,27 @@ class AccountPreferencesFragment : PreferenceFragmentCompat(),
                             accountManager.activeAccount?.let {
                                 it.defaultPostPrivacy = account.source?.privacy ?: Status.Visibility.PUBLIC
                                 it.defaultMediaSensitivity = account.source?.sensitive ?: false
+                                it.alwaysExpandContentWarnings = account.source?.expand_spoilers ?: false
                                 accountManager.saveAccount(it)
                             }
                         } else {
                             Log.e("AccountPreferences", "failed updating settings on server")
-                            showErrorSnackbar(visibility, sensitive)
+                            showErrorSnackbar(visibility, sensitive, expandContentWarnings)
                         }
                     }
 
                     override fun onFailure(call: Call<Account>, t: Throwable) {
                         Log.e("AccountPreferences", "failed updating settings on server", t)
-                        showErrorSnackbar(visibility, sensitive)
+                        showErrorSnackbar(visibility, sensitive, expandContentWarnings)
                     }
 
                 })
     }
 
-    private fun showErrorSnackbar(visibility: String?, sensitive: Boolean?) {
+    private fun showErrorSnackbar(visibility: String?, sensitive: Boolean?, expandContentWarnings: Boolean?) {
         view?.let {view ->
             Snackbar.make(view, R.string.pref_failed_to_sync, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.action_retry) { syncWithServer( visibility, sensitive)}
+                    .setAction(R.string.action_retry) { syncWithServer( visibility, sensitive, expandContentWarnings)}
                     .show()
         }
     }

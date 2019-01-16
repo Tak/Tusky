@@ -40,6 +40,7 @@ import com.keylesspalace.tusky.appstore.ReblogEvent;
 import com.keylesspalace.tusky.appstore.StatusComposedEvent;
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent;
 import com.keylesspalace.tusky.appstore.UnfollowEvent;
+import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
 import com.keylesspalace.tusky.entity.Status;
@@ -153,6 +154,7 @@ public class TimelineFragment extends SFragment implements
 
     private boolean didLoadEverythingBottom;
     private boolean alwaysShowSensitiveMedia;
+    private boolean alwaysExpandContentWarnings;
     private boolean initialUpdateFailed = false;
 
     @Override
@@ -168,7 +170,8 @@ public class TimelineFragment extends SFragment implements
                     if (status != null) {
                         return ViewDataUtils.statusToViewData(
                                 status,
-                                alwaysShowSensitiveMedia
+                                alwaysShowSensitiveMedia,
+                                alwaysExpandContentWarnings
                         );
                     } else {
                         Placeholder placeholder = input.asLeft();
@@ -313,8 +316,10 @@ public class TimelineFragment extends SFragment implements
 
     private void setupTimelinePreferences() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
-        boolean mediaPreviewEnabled = accountManager.getActiveAccount().getMediaPreviewEnabled();
+        AccountEntity account = accountManager.getActiveAccount();
+        alwaysShowSensitiveMedia = account.getAlwaysShowSensitiveMedia();
+        alwaysExpandContentWarnings = account.getAlwaysExpandContentWarnings();
+        boolean mediaPreviewEnabled = account.getMediaPreviewEnabled();
         adapter.setMediaPreviewEnabled(mediaPreviewEnabled);
         boolean useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false);
         adapter.setUseAbsoluteTime(useAbsoluteTime);
@@ -753,6 +758,11 @@ public class TimelineFragment extends SFragment implements
             case "alwaysShowSensitiveMedia": {
                 //it is ok if only newly loaded statuses are affected, no need to fully refresh
                 alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
+                break;
+            }
+            case "alwaysExpandContentWarnings": {
+                //it is ok if only newly loaded statuses are affected, no need to fully refresh
+                alwaysExpandContentWarnings = accountManager.getActiveAccount().getAlwaysExpandContentWarnings();
                 break;
             }
         }

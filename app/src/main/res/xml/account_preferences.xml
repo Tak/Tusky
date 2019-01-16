@@ -42,6 +42,10 @@
             android:key="alwaysShowSensitiveMedia"
             android:title="@string/pref_title_alway_show_sensitive_media" />
 
+        <SwitchPreference
+            android:key="alwaysExpandContentWarnings"
+            android:title="@string/pref_title_always_expand_content_warnings" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -52,6 +52,7 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
     private lateinit var searchAdapter: SearchResultsAdapter
 
     private var alwaysShowSensitiveMedia = false
+    private var alwaysExpandContentWarnings = false;
     private var mediaPreviewEnabled = true
     private var useAbsoluteTime = false
 
@@ -62,6 +63,7 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val preferences = PreferenceManager.getDefaultSharedPreferences(view.context)
         alwaysShowSensitiveMedia = preferences.getBoolean("alwaysShowSensitiveMedia", false)
+        alwaysExpandContentWarnings = preferences.getBoolean("alwaysExpandContentWarnings", false)
         mediaPreviewEnabled = preferences.getBoolean("mediaPreviewEnabled", true)
         useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false)
 
@@ -70,6 +72,7 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
         searchAdapter = SearchResultsAdapter(
                 mediaPreviewEnabled,
                 alwaysShowSensitiveMedia,
+                alwaysExpandContentWarnings,
                 this,
                 this,
                 useAbsoluteTime)
@@ -153,7 +156,8 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
                         searchAdapter.updateStatusAtPosition(
                                 ViewDataUtils.statusToViewData(
                                         status,
-                                        alwaysShowSensitiveMedia
+                                        alwaysShowSensitiveMedia,
+                                        alwaysExpandContentWarnings
                                 ),
                                 position
                         )
@@ -172,7 +176,8 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
                         searchAdapter.updateStatusAtPosition(
                                 ViewDataUtils.statusToViewData(
                                         status,
-                                        alwaysShowSensitiveMedia
+                                        alwaysShowSensitiveMedia,
+                                        alwaysExpandContentWarnings
                                 ),
                                 position
                         )

@@ -50,6 +50,7 @@ import com.keylesspalace.tusky.appstore.FavoriteEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
 import com.keylesspalace.tusky.appstore.StatusComposedEvent;
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent;
+import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.di.Injectable;
 import com.keylesspalace.tusky.entity.Card;
 import com.keylesspalace.tusky.entity.Status;
@@ -95,6 +96,7 @@ public final class ViewThreadFragment extends SFragment implements
     private String thisThreadsStatusId;
     private Card card;
     private boolean alwaysShowSensitiveMedia;
+    private boolean alwaysExpandContentWarnings;
 
     private int statusIndex = 0;
 
@@ -104,7 +106,8 @@ public final class ViewThreadFragment extends SFragment implements
                 public StatusViewData.Concrete apply(Status input) {
                     return ViewDataUtils.statusToViewData(
                             input,
-                            alwaysShowSensitiveMedia
+                            alwaysShowSensitiveMedia,
+                            alwaysExpandContentWarnings
                     );
                 }
             });
@@ -160,8 +163,10 @@ public final class ViewThreadFragment extends SFragment implements
                 threadLineDrawable));
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(
                 getActivity());
-        alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
-        boolean mediaPreviewEnabled = accountManager.getActiveAccount().getMediaPreviewEnabled();
+        AccountEntity account = accountManager.getActiveAccount();
+        alwaysShowSensitiveMedia = account.getAlwaysShowSensitiveMedia();
+        alwaysExpandContentWarnings = account.getAlwaysExpandContentWarnings();
+        boolean mediaPreviewEnabled = account.getMediaPreviewEnabled();
         adapter.setMediaPreviewEnabled(mediaPreviewEnabled);
         boolean useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false);
         adapter.setUseAbsoluteTime(useAbsoluteTime);
