@@ -55,6 +55,7 @@ class SendStatusBroadcastReceiver : BroadcastReceiver() {
         val mentions = intent.getStringArrayExtra(NotificationHelper.KEY_MENTIONS)
         val citedText = intent.getStringExtra(NotificationHelper.KEY_CITED_TEXT)
         val localAuthorId = intent.getStringExtra(NotificationHelper.KEY_CITED_AUTHOR_LOCAL)
+        val localOnly = intent.getBooleanExtra(NotificationHelper.KEY_LOCAL_ONLY, false)
 
         val account = accountManager.getAccountById(senderId)
 
@@ -91,6 +92,7 @@ class SendStatusBroadcastReceiver : BroadcastReceiver() {
                                 text = text,
                                 warningText = spoiler,
                                 visibility = visibility.serverString(),
+                                localOnly = localOnly,
                                 sensitive = false,
                                 mediaIds = emptyList(),
                                 mediaUris = emptyList(),
@@ -140,7 +142,8 @@ class SendStatusBroadcastReceiver : BroadcastReceiver() {
                     contentWarning = spoiler,
                     mentionedUsernames = mentions.toSet(),
                     replyingStatusAuthor = localAuthorId,
-                    replyingStatusContent = citedText
+                    replyingStatusContent = citedText,
+                    localOnly = localOnly
             ))
 
             composeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

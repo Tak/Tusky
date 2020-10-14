@@ -113,6 +113,7 @@ class ComposeActivity : BaseActivity(),
 
     private val maxUploadMediaNumber = 4
     private var mediaCount = 0
+    private var composeOptions: ComposeOptions? = null;
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,7 +152,7 @@ class ComposeActivity : BaseActivity(),
         /* If the composer is started up as a reply to another post, override the "starting" state
          * based on what the intent from the reply request passes. */
 
-        val composeOptions: ComposeOptions? = intent.getParcelableExtra(COMPOSE_OPTIONS_EXTRA)
+        composeOptions = intent.getParcelableExtra(COMPOSE_OPTIONS_EXTRA)
 
         viewModel.setup(composeOptions)
         setupReplyViews(composeOptions?.replyingStatusAuthor, composeOptions?.replyingStatusContent)
@@ -159,6 +160,9 @@ class ComposeActivity : BaseActivity(),
         if (!tootText.isNullOrEmpty()) {
             binding.composeEditField.setText(tootText)
         }
+        // Replies to local-only posts must be local-only
+        // Drafts and redrafts can also have saved local-only state
+        binding.composeOptionsBottomSheet.setLocalOnlyRequired(viewModel.localOnlyRequired)
 
         if (!composeOptions?.scheduledAt.isNullOrEmpty()) {
             binding.composeScheduleView.setDateTime(composeOptions?.scheduledAt)
@@ -286,6 +290,14 @@ class ComposeActivity : BaseActivity(),
                 maximumTootCharacters = instanceData.maxChars
                 updateVisibleCharactersLeft()
                 binding.composeScheduleButton.visible(instanceData.supportsScheduled)
+                val localOnlySupported = instanceData.supportsLocalOnlyPosts &&
+                        // When replying to remote accounts, don't suggest local-only
+                        // We only check this at load time, so the user can add remote mentions
+                        // to a local-only post and it just won't work
+                        // However, constantly updating this UI during editing
+                        // seems finicky and error-prone enough that this is a good compromise
+                        (composeOptions?.mentionedUsernames?.any { it.contains('@') } != true)
+                binding.composeOptionsBottomSheet.setLocalOnlySupported(localOnlySupported)
             }
             viewModel.emoji.observe { emoji -> setEmojiList(emoji) }
             combineLiveData(viewModel.markMediaAsSensitive, viewModel.showContentWarning) { markSensitive, showContentWarning ->
@@ -322,6 +334,9 @@ class ComposeActivity : BaseActivity(),
                 enableButton(binding.composeAddMediaButton, active, active)
                 enablePollButton(media.isNullOrEmpty())
             }.subscribe()
+            viewModel.localOnly.observe {
+                updateLocalOnlyUI(it == true)
+            }
             viewModel.uploadError.observe {
                 displayTransientError(R.string.error_media_upload_sending)
             }
@@ -533,6 +548,15 @@ class ComposeActivity : BaseActivity(),
             else -> R.drawable.ic_lock_open_24dp
         }
         binding.composeToggleVisibilityButton.setImageResource(iconRes)
+        val color = if (viewModel.localOnly.value == true) {
+            R.color.tusky_blue
+        } else {
+            android.R.attr.textColorTertiary
+        }
+
+        val icon = getDrawable(iconRes)
+        ThemeUtils.setDrawableTint(this, icon, color)
+        binding.composeToggleVisibilityButton.setImageDrawable(icon)
     }
 
     private fun showComposeOptions() {
@@ -656,6 +680,11 @@ class ComposeActivity : BaseActivity(),
     override fun onVisibilityChanged(visibility: Status.Visibility) {
         composeOptionsBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         viewModel.statusVisibility.value = visibility
+    }
+
+    override fun onLocalOnlyChecked(checked: Boolean) {
+        composeOptionsBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        viewModel.localOnly.value = checked
     }
 
     @VisibleForTesting
@@ -896,6 +925,16 @@ class ComposeActivity : BaseActivity(),
         binding.composeContentWarningButton.drawable.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
     }
 
+    private fun updateLocalOnlyUI(localOnly: Boolean) {
+        val color = if (localOnly) {
+            R.color.tusky_blue
+        } else {
+            android.R.attr.textColorTertiary
+        }
+        binding.composeOptionsBottomSheet.setLocalOnly(localOnly)
+        ThemeUtils.setDrawableTint(this, binding.composeToggleVisibilityButton.drawable, color)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             handleCloseButton()
@@ -1030,7 +1069,8 @@ class ComposeActivity : BaseActivity(),
             var scheduledAt: String? = null,
             var sensitive: Boolean? = null,
             var poll: NewPoll? = null,
-            var modifiedInitialState: Boolean? = null
+            var modifiedInitialState: Boolean? = null,
+            var localOnly: Boolean? = null
     ) : Parcelable
 
     companion object {

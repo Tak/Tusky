@@ -26,7 +26,8 @@ data class DeletedStatus(
         val sensitive: Boolean,
         @SerializedName("media_attachments") var attachments: ArrayList<Attachment>?,
         val poll: Poll?,
-        @SerializedName("created_at") val createdAt: Date
+        @SerializedName("created_at") val createdAt: Date,
+        @SerializedName("local_only") val localOnly: Boolean?
 ) {
     fun isEmpty(): Boolean {
         return text == null && attachments == null

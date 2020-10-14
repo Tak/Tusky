@@ -61,6 +61,9 @@ class ComposeViewModel @Inject constructor(
 
     private var contentWarningStateChanged: Boolean = false
     private var modifiedInitialState: Boolean = false
+    private var _localOnlyRequired: Boolean = false
+    val localOnlyRequired: Boolean
+        get() = _localOnlyRequired
 
     private val instance: MutableLiveData<InstanceEntity?> = MutableLiveData(null)
 
@@ -69,7 +72,8 @@ class ComposeViewModel @Inject constructor(
                 maxChars = instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT,
                 pollMaxOptions = instance?.maxPollOptions ?: DEFAULT_MAX_OPTION_COUNT,
                 pollMaxLength = instance?.maxPollOptionLength ?: DEFAULT_MAX_OPTION_LENGTH,
-                supportsScheduled = instance?.version?.let { VersionUtils(it).supportsScheduledToots() } ?: false
+                supportsScheduled = instance?.version?.let { VersionUtils(it).supportsScheduledToots() } ?: false,
+                supportsLocalOnlyPosts = instance?.localOnlyPosts ?: false
         )
     }
     val emoji: MutableLiveData<List<Emoji>?> = MutableLiveData()
@@ -81,6 +85,7 @@ class ComposeViewModel @Inject constructor(
     val setupComplete = mutableLiveData(false)
     val poll: MutableLiveData<NewPoll?> = mutableLiveData(null)
     val scheduledAt: MutableLiveData<String?> = mutableLiveData(null)
+    val localOnly: MutableLiveData<Boolean?> = mutableLiveData(null)
 
     val media = mutableLiveData<List<QueuedMedia>>(listOf())
     val uploadError = MutableLiveData<Throwable>()
@@ -98,7 +103,8 @@ class ComposeViewModel @Inject constructor(
                     maximumTootCharacters = instance.maxTootChars,
                     maxPollOptions = instance.pollLimits?.maxOptions,
                     maxPollOptionLength = instance.pollLimits?.maxOptionChars,
-                    version = instance.version
+                    version = instance.version,
+                    localOnlyPosts = instance.localOnlyPosts
             )
         }
                 .doOnSuccess {
@@ -242,10 +248,11 @@ class ComposeViewModel @Inject constructor(
                 contentWarning = contentWarning,
                 sensitive = markMediaAsSensitive.value!!,
                 visibility = statusVisibility.value!!,
+                localOnly = localOnly.value == true,
                 mediaUris = mediaUris,
                 mediaDescriptions = mediaDescriptions,
                 poll = poll.value,
-                failedToSend = false
+                failedToSend = false,
         ).subscribe()
     }
 
@@ -294,6 +301,7 @@ class ComposeViewModel @Inject constructor(
                             savedTootUid = savedTootUid,
                             draftId = draftId,
                             idempotencyKey = randomAlphanumericString(16),
+                            localOnly = localOnly.value,
                             retries = 0
                     )
 
@@ -396,6 +404,8 @@ class ComposeViewModel @Inject constructor(
         inReplyToId = composeOptions?.inReplyToId
 
         modifiedInitialState = composeOptions?.modifiedInitialState == true
+        localOnly.value = composeOptions?.localOnly
+        _localOnlyRequired = !composeOptions?.inReplyToId.isNullOrBlank() && composeOptions?.localOnly == true
 
         val contentWarning = composeOptions?.contentWarning
         if (contentWarning != null) {
@@ -496,7 +506,8 @@ data class ComposeInstanceParams(
         val maxChars: Int,
         val pollMaxOptions: Int,
         val pollMaxLength: Int,
-        val supportsScheduled: Boolean
+        val supportsScheduled: Boolean,
+        val supportsLocalOnlyPosts: Boolean
 )
 
 /**

@@ -141,6 +141,7 @@ class SendTootService : Service(), Injectable {
                 tootToSend.sensitive,
                 tootToSend.mediaIds,
                 tootToSend.scheduledAt,
+                tootToSend.localOnly,
                 tootToSend.poll
         )
 
@@ -258,6 +259,7 @@ class SendTootService : Service(), Injectable {
                 content = toot.text,
                 contentWarning = toot.warningText,
                 sensitive = toot.sensitive,
+                localOnly = toot.localOnly == true,
                 visibility = Status.Visibility.byString(toot.visibility),
                 mediaUris = toot.mediaUris,
                 mediaDescriptions = toot.mediaDescriptions,
@@ -335,5 +337,6 @@ data class TootToSend(
         val savedTootUid: Int,
         val draftId: Int,
         val idempotencyKey: String,
+        val localOnly: Boolean?,
         var retries: Int
 ) : Parcelable

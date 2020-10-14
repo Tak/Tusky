@@ -170,7 +170,8 @@ public final class SavedTootActivity extends BaseActivity implements SavedTootAd
                 /*scheduledAt*/null,
                 /*sensitive*/null,
                 /*poll*/null,
-                /* modifiedInitialState */ true
+                /* modifiedInitialState */ true,
+                /* localOnly */ item.getLocalOnly()
         );
         Intent intent = ComposeActivity.startIntent(this, composeOptions);
         startActivity(intent);

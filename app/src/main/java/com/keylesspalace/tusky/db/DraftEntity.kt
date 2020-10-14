@@ -35,6 +35,7 @@ data class DraftEntity(
         val contentWarning: String?,
         val sensitive: Boolean,
         val visibility: Status.Visibility,
+        val localOnly: Boolean,
         val attachments: List<DraftAttachment>,
         val poll: NewPoll?,
         val failedToSend: Boolean

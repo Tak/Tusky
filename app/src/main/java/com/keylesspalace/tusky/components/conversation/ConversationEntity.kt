@@ -78,6 +78,7 @@ data class ConversationStatusEntity(
         val expanded: Boolean,
         val collapsible: Boolean,
         val collapsed: Boolean,
+        val localOnly: Boolean?,
         val poll: Poll?
 
 ) {
@@ -158,6 +159,7 @@ data class ConversationStatusEntity(
                 application = null,
                 pinned = false,
                 muted = false,
+                localOnly = localOnly,
                 poll = poll,
                 card = null)
     }
@@ -181,6 +183,7 @@ fun Status.toEntity() =
                 false,
                 shouldTrimStatus(content),
                 true,
+                localOnly,
                 poll
         )
 

@@ -227,6 +227,7 @@ class TimelineRepositoryImpl(
                     application = application,
                     pinned = false,
                     muted = status.muted,
+                    localOnly = status.localOnly,
                     poll = poll,
                     card = null
             )
@@ -255,6 +256,7 @@ class TimelineRepositoryImpl(
                     application = null,
                     pinned = false,
                     muted = status.muted,
+                    localOnly = status.localOnly,
                     poll = null,
                     card = null
             )
@@ -282,6 +284,7 @@ class TimelineRepositoryImpl(
                     application = application,
                     pinned = false,
                     muted = status.muted,
+                    localOnly = status.localOnly,
                     poll = poll,
                     card = null
             )
@@ -354,7 +357,8 @@ fun Placeholder.toEntity(timelineUserId: Long): TimelineStatusEntity {
             reblogServerId = null,
             reblogAccountId = null,
             poll = null,
-            muted = false
+            muted = false,
+            localOnly = null
     )
 }
 
@@ -385,7 +389,8 @@ fun Status.toEntity(timelineUserId: Long,
             reblogServerId = reblog?.id,
             reblogAccountId = reblog?.let { this.account.id },
             poll = actionable.poll.let(gson::toJson),
-            muted = actionable.muted
+            muted = actionable.muted,
+            localOnly = actionable.localOnly
     )
 }
 

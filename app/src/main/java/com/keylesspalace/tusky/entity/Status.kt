@@ -45,7 +45,8 @@ data class Status(
         var pinned: Boolean?,
         var muted: Boolean?,
         val poll: Poll?,
-        val card: Card?
+        val card: Card?,
+        @SerializedName("local_only") val localOnly: Boolean?
 ) {
 
     val actionableId: String
@@ -121,7 +122,8 @@ data class Status(
                 sensitive = sensitive,
                 attachments = attachments,
                 poll = poll,
-                createdAt = createdAt
+                createdAt = createdAt,
+                localOnly = localOnly
         )
     }
 

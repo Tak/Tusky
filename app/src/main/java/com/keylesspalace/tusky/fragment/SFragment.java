@@ -168,6 +168,8 @@ public abstract class SFragment extends Fragment implements Injectable {
         composeOptions.setMentionedUsernames(mentionedUsernames);
         composeOptions.setReplyingStatusAuthor(actionableStatus.getAccount().getLocalUsername());
         composeOptions.setReplyingStatusContent(actionableStatus.getContent().toString());
+        // Replies to local-only statuses should also be local-only
+        composeOptions.setLocalOnly(actionableStatus.getLocalOnly());
 
         Intent intent = ComposeActivity.startIntent(getContext(), composeOptions);
         getActivity().startActivity(intent);
@@ -454,6 +456,7 @@ public abstract class SFragment extends Fragment implements Injectable {
                                         composeOptions.setMediaAttachments(deletedStatus.getAttachments());
                                         composeOptions.setSensitive(deletedStatus.getSensitive());
                                         composeOptions.setModifiedInitialState(true);
+                                        composeOptions.setLocalOnly(deletedStatus.getLocalOnly());
                                         if (deletedStatus.getPoll() != null) {
                                             composeOptions.setPoll(deletedStatus.getPoll().toNewPoll(deletedStatus.getCreatedAt()));
                                         }

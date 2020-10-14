@@ -30,7 +30,8 @@ data class Instance (
         @SerializedName("contact_account") val contactAccount: Account,
         @SerializedName("max_toot_chars") val maxTootChars: Int?,
         @SerializedName("max_bio_chars") val maxBioChars: Int?,
-        @SerializedName("poll_limits") val pollLimits: PollLimits?
+        @SerializedName("poll_limits") val pollLimits: PollLimits?,
+        @SerializedName("local_only_posts") val localOnlyPosts: Boolean?
 ) {
     override fun hashCode(): Int {
         return uri.hashCode()

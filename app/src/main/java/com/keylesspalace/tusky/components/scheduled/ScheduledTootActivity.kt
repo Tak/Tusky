@@ -115,7 +115,8 @@ class ScheduledTootActivity : BaseActivity(), ScheduledTootActionListener, Injec
                 inReplyToId = item.params.inReplyToId,
                 visibility = item.params.visibility,
                 scheduledAt = item.scheduledAt,
-                sensitive = item.params.sensitive
+                sensitive = item.params.sensitive,
+                localOnly = item.params.localOnly
         ))
         startActivity(intent)
     }

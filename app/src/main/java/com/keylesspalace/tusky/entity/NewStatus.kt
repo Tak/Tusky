@@ -27,6 +27,7 @@ data class NewStatus(
         val sensitive: Boolean,
         @SerializedName("media_ids") val mediaIds: List<String>?,
         @SerializedName("scheduled_at") val scheduledAt: String?,
+        @SerializedName("local_only") val localOnly: Boolean?,
         val poll: NewPoll?
 )
 

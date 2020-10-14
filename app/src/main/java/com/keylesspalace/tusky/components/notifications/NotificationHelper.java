@@ -112,6 +112,8 @@ public class NotificationHelper {
 
     public static final String KEY_CITED_AUTHOR_LOCAL = "KEY_CITED_AUTHOR_LOCAL";
 
+    public static final String KEY_LOCAL_ONLY = "KEY_LOCAL_ONLY";
+
     /**
      * notification channels used on Android O+
      **/
@@ -318,6 +320,8 @@ public class NotificationHelper {
         String contentWarning = actionableStatus.getSpoilerText();
         Status.Mention[] mentions = actionableStatus.getMentions();
         List<String> mentionedUsernames = new ArrayList<>();
+        boolean localOnly = actionableStatus.getLocalOnly();
+
         mentionedUsernames.add(actionableStatus.getAccount().getUsername());
         for (Status.Mention mention : mentions) {
             mentionedUsernames.add(mention.getUsername());
@@ -336,7 +340,8 @@ public class NotificationHelper {
                 .putExtra(KEY_CITED_STATUS_ID, inReplyToId)
                 .putExtra(KEY_VISIBILITY, replyVisibility)
                 .putExtra(KEY_SPOILER, contentWarning)
-                .putExtra(KEY_MENTIONS, mentionedUsernames.toArray(new String[0]));
+                .putExtra(KEY_MENTIONS, mentionedUsernames.toArray(new String[0]))
+                .putExtra(KEY_LOCAL_ONLY, localOnly);
 
         return PendingIntent.getBroadcast(context.getApplicationContext(),
                 notificationId,

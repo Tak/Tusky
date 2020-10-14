@@ -15,9 +15,9 @@
 
 package com.keylesspalace.tusky.util;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
@@ -26,6 +26,7 @@ import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 
 /**
  * Provides runtime compatibility to obtain theme information and re-theme views, especially where
@@ -41,13 +42,15 @@ public class ThemeUtils {
     private static final String THEME_AUTO = "auto";
     private static final String THEME_SYSTEM = "auto_system";
 
+    // ContextCompat requires ColorRes, resolveAttribute requires AttrRes
+    @SuppressLint("ResourceType")
     @ColorInt
     public static int getColor(@NonNull Context context, @AttrRes int attribute) {
         TypedValue value = new TypedValue();
         if (context.getTheme().resolveAttribute(attribute, value, true)) {
             return value.data;
         } else {
-            return Color.BLACK;
+            return ContextCompat.getColor(context, attribute);
         }
     }
 

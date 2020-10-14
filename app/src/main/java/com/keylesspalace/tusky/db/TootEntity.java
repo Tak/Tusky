@@ -63,12 +63,16 @@ public class TootEntity {
     private final Status.Visibility visibility;
 
     @Nullable
+    @ColumnInfo(name = "localOnly")
+    private final boolean localOnly;
+
+    @Nullable
     @ColumnInfo(name = "poll")
     private final NewPoll poll;
 
     public TootEntity(int uid, String text, String urls, String descriptions, String contentWarning, String inReplyToId,
                       @Nullable String inReplyToText, @Nullable String inReplyToUsername,
-                      Status.Visibility visibility, @Nullable NewPoll poll) {
+                      Status.Visibility visibility, @Nullable boolean localOnly, @Nullable NewPoll poll) {
         this.uid = uid;
         this.text = text;
         this.urls = urls;
@@ -78,6 +82,7 @@ public class TootEntity {
         this.inReplyToText = inReplyToText;
         this.inReplyToUsername = inReplyToUsername;
         this.visibility = visibility;
+        this.localOnly = localOnly;
         this.poll = poll;
     }
 
@@ -118,6 +123,9 @@ public class TootEntity {
     public Status.Visibility getVisibility() {
         return visibility;
     }
+
+    @Nullable
+    public boolean getLocalOnly() { return localOnly; }
 
     @Nullable
     public NewPoll getPoll() {

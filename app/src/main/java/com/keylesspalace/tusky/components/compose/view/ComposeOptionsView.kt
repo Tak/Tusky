@@ -15,20 +15,25 @@
 
 package com.keylesspalace.tusky.components.compose.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.RadioGroup
+import android.widget.LinearLayout
+import androidx.core.widget.CompoundButtonCompat
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.entity.Status
+import com.keylesspalace.tusky.util.ThemeUtils
+import com.keylesspalace.tusky.util.visible
+import kotlinx.android.synthetic.main.view_compose_options.view.*
 
-class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : RadioGroup(context, attrs) {
+class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : LinearLayout(context, attrs) {
 
     var listener: ComposeOptionsListener? = null
 
     init {
         inflate(context, R.layout.view_compose_options, this)
 
-        setOnCheckedChangeListener { _, checkedId ->
+        visibilityRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             val visibility = when (checkedId) {
                 R.id.publicRadioButton ->
                     Status.Visibility.PUBLIC
@@ -42,6 +47,10 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
                     Status.Visibility.PUBLIC
             }
             listener?.onVisibilityChanged(visibility)
+        }
+
+        localOnlyCheckButton.setOnCheckedChangeListener { _, checked ->
+            listener?.onLocalOnlyChecked(checked)
         }
     }
 
@@ -60,11 +69,30 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
 
         }
 
-        check(selectedButton)
+        visibilityRadioGroup.check(selectedButton)
     }
 
+    fun setLocalOnlySupported(supported: Boolean) {
+        localOnlyCheckButton.visible(supported)
+    }
+
+    @SuppressLint("ResourceType")
+    fun setLocalOnlyRequired(required: Boolean) {
+        localOnlyCheckButton.isClickable = !required
+        if (required) {
+            // Use the color to indicate that it's active but disabled
+            ThemeUtils.setDrawableTint(context,
+                    CompoundButtonCompat.getButtonDrawable(localOnlyCheckButton),
+                    R.color.transparent_tusky_blue)
+        }
+    }
+
+    fun setLocalOnly(localOnly: Boolean) {
+        localOnlyCheckButton.isChecked = localOnly
+    }
 }
 
 interface ComposeOptionsListener {
     fun onVisibilityChanged(visibility: Status.Visibility)
+    fun onLocalOnlyChecked(checked: Boolean)
 }

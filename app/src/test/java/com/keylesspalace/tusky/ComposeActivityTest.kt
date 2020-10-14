@@ -18,6 +18,8 @@ package com.keylesspalace.tusky
 import android.content.Intent
 import android.os.Looper.getMainLooper
 import android.text.SpannedString
+import android.view.View
+import android.widget.CheckBox
 import android.widget.EditText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.keylesspalace.tusky.components.compose.ComposeActivity
@@ -29,6 +31,7 @@ import com.keylesspalace.tusky.db.*
 import com.keylesspalace.tusky.di.ViewModelFactory
 import com.keylesspalace.tusky.entity.Account
 import com.keylesspalace.tusky.entity.Instance
+import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.service.ServiceClient
 import com.keylesspalace.tusky.util.SaveTootHelper
@@ -104,7 +107,7 @@ class ComposeActivityTest {
 
         val instanceDaoMock = mock(InstanceDao::class.java)
         `when`(instanceDaoMock.loadMetadataForInstance(any())).thenReturn(
-                Single.just(InstanceEntity(instanceDomain, emptyList(),null, null, null, null))
+                Single.just(InstanceEntity(instanceDomain, emptyList(),null, null, null, null, null))
         )
 
         val dbMock = mock(AppDatabase::class.java)
@@ -178,7 +181,7 @@ class ComposeActivityTest {
 
     @Test
     fun whenMaximumTootCharsIsNull_defaultLimitIsUsed() {
-        instanceResponseCallback = { getInstanceWithMaximumTootCharacters(null) }
+        instanceResponseCallback = { getInstanceWithOptionalFeatures(null, null) }
         setupActivity()
         assertEquals(DEFAULT_CHARACTER_LIMIT, activity.maximumTootCharacters)
     }
@@ -186,10 +189,63 @@ class ComposeActivityTest {
     @Test
     fun whenMaximumTootCharsIsPopulated_customLimitIsUsed() {
         val customMaximum = 1000
-        instanceResponseCallback = { getInstanceWithMaximumTootCharacters(customMaximum) }
+        instanceResponseCallback = { getInstanceWithOptionalFeatures(customMaximum, null) }
         setupActivity()
         shadowOf(getMainLooper()).idle()
         assertEquals(customMaximum, activity.maximumTootCharacters)
+    }
+
+    @Test
+    fun whenInstanceDoesntSupportLocalOnly_localOnlyOptionIsGone() {
+        assertEquals(View.GONE, activity.findViewById<CheckBox>(R.id.localOnlyCheckButton).visibility)
+    }
+
+    @Test
+    fun whenInstanceSupportsLocalOnly_localOnlyOptionIsVisible() {
+        instanceResponseCallback = { getInstanceWithOptionalFeatures(null, true) }
+        setupActivity()
+        shadowOf(getMainLooper()).idle()
+        val checkbox = activity.findViewById<CheckBox>(R.id.localOnlyCheckButton)
+        assertEquals(View.VISIBLE, checkbox.visibility)
+        assertEquals(false, checkbox.isChecked)
+        assertEquals(true, checkbox.isClickable)
+    }
+
+    @Test
+    fun whenMentioningRemoteUsers_localOnlyIsGone() {
+        instanceResponseCallback = { getInstanceWithOptionalFeatures(null, true) }
+        composeOptions = ComposeActivity.ComposeOptions(mentionedUsernames = setOf("alice", "bob@good.hat", "eve@bad.hat"),
+                inReplyToId = "12345", replyVisibility = Status.Visibility.PUBLIC, replyingStatusAuthor = "Alice",
+                replyingStatusContent = "lorem ipsum")
+        setupActivity()
+        val checkbox = activity.findViewById<CheckBox>(R.id.localOnlyCheckButton)
+        assertEquals(View.GONE, checkbox.visibility)
+    }
+
+    @Test
+    fun whenReplyingToLocalOnly_localOnlyOptionIsForced() {
+        instanceResponseCallback = { getInstanceWithOptionalFeatures(null, true) }
+        composeOptions = ComposeActivity.ComposeOptions(inReplyToId = "12345", replyVisibility = Status.Visibility.PUBLIC,
+        replyingStatusAuthor = "Alice", replyingStatusContent = "lorem ipsum", localOnly = true)
+        setupActivity()
+        shadowOf(getMainLooper()).idle()
+        val checkbox = activity.findViewById<CheckBox>(R.id.localOnlyCheckButton)
+        assertEquals(View.VISIBLE, checkbox.visibility)
+        assertEquals(true, checkbox.isChecked)
+        assertEquals(false, checkbox.isClickable)
+    }
+
+    @Test
+    fun whenLoadingLocalOnlyDraft_localOnlyIsNotForced() {
+        instanceResponseCallback = { getInstanceWithOptionalFeatures(null, true) }
+        composeOptions = ComposeActivity.ComposeOptions(savedTootUid = 12345, draftId = 12345, tootText = "lorem ipsum",
+        visibility = Status.Visibility.PUBLIC, localOnly = true)
+        setupActivity()
+        shadowOf(getMainLooper()).idle()
+        val checkbox = activity.findViewById<CheckBox>(R.id.localOnlyCheckButton)
+        assertEquals(View.VISIBLE, checkbox.visibility)
+        assertEquals(true, checkbox.isChecked)
+        assertEquals(true, checkbox.isClickable)
     }
 
     @Test
@@ -383,7 +439,7 @@ class ComposeActivityTest {
         activity.findViewById<EditText>(R.id.composeEditField).setText(text ?: "Some text")
     }
 
-    private fun getInstanceWithMaximumTootCharacters(maximumTootCharacters: Int?): Instance
+    private fun getInstanceWithOptionalFeatures(maximumTootCharacters: Int?, localOnly: Boolean?): Instance
     {
         return Instance(
                 "https://example.token",
@@ -415,9 +471,9 @@ class ComposeActivityTest {
                 ),
                 maximumTootCharacters,
                 null,
-                null
+                null,
+                localOnly
         )
     }
-
 }
 

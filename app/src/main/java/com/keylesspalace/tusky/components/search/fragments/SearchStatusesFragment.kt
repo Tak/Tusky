@@ -219,7 +219,8 @@ class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.Concre
                 contentWarning = actionableStatus.spoilerText,
                 mentionedUsernames = mentionedUsernames,
                 replyingStatusAuthor = actionableStatus.account.localUsername,
-                replyingStatusContent = actionableStatus.content.toString()
+                replyingStatusContent = actionableStatus.content.toString(),
+                localOnly = actionableStatus.localOnly
         ))
         startActivity(intent)
     }
@@ -473,6 +474,7 @@ class SearchStatusesFragment : SearchFragment<Pair<Status, StatusViewData.Concre
                                             contentWarning = redraftStatus.spoilerText,
                                             mediaAttachments = redraftStatus.attachments,
                                             sensitive = redraftStatus.sensitive,
+                                            localOnly = redraftStatus.localOnly,
                                             poll = redraftStatus.poll?.toNewPoll(status.createdAt)
                                     ))
                                     startActivity(intent)
